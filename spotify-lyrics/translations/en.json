@@ -1,5 +1,13 @@
 {
   "description": "Time-synced lyrics panel linked to the media widget.",
   "name": "Spotify Lyrics",
-  "no_music": "No music playing"
+  "no_music": "No music playing",
+  "settings.accent_color.label": "Accent color",
+  "settings.accent_color.description": "Color of the bar icon and the track artist. Accepts any theme color or a custom hex.",
+  "settings.active_color.label": "Active lyric color",
+  "settings.active_color.description": "Color of the current lyric line and the track title.",
+  "settings.hide_when_idle.label": "Hide when nothing is playing",
+  "settings.hide_when_idle.description": "Hide the bar button, desktop widget and panel while no media is playing.",
+  "settings.inactive_color.label": "Inactive lyric color",
+  "settings.inactive_color.description": "Color of the previous/next lyrics, separators and empty states."
 }

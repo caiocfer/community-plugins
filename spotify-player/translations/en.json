@@ -1,0 +1,19 @@
+{
+  "description": "Spotify desktop player: full-bleed album art, progress bar and playback controls.",
+  "name": "Spotify Player",
+  "no_music": "No music playing",
+  "settings.accent_color.label": "Progress color",
+  "settings.accent_color.description": "Progress bar color used when cover colors are off. Accepts any theme color or a custom hex.",
+  "settings.corner_radius.label": "Corner radius",
+  "settings.corner_radius.description": "Rounding applied to the album art.",
+  "settings.hide_when_idle.label": "Hide when nothing is playing",
+  "settings.hide_when_idle.description": "Hide the desktop widget while Spotify is stopped.",
+  "settings.show_track_info.label": "Show track info",
+  "settings.show_track_info.description": "Show the track title and artist over the cover.",
+  "settings.widget_height.label": "Fallback height",
+  "settings.widget_height.description": "Draw height used only while the widget has no fixed box (auto-fit). Boxed widgets follow the box size.",
+  "settings.widget_width.label": "Fallback width",
+  "settings.widget_width.description": "Draw width used only while the widget has no fixed box (auto-fit). Boxed widgets follow the box size.",
+  "settings.cover_colors.label": "Colors from cover",
+  "settings.cover_colors.description": "Tint the title, artist, icons and progress bar with the album art hue, contrast-fitted over a soft scrim so they stay readable."
+}

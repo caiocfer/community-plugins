@@ -160,15 +160,13 @@ class SpotifyLyricsDaemon:
 
     def get_player_status(self):
         try:
-            # Query active players
+            # Spotify only, so browsers playing a video never take over the lyrics.
+            # Names come as "spotify" or "spotify.instance_N" depending on packaging.
             players = subprocess.check_output(["playerctl", "-l"], stderr=subprocess.DEVNULL).decode("utf-8").strip().splitlines()
-            if not players:
+            player_name = next((p for p in players if "spotify" in p.lower()), None)
+            if not player_name:
                 return None
-            
-            # Prioritize Spotify (handling instance names like spotify.instance1 or Flatpak)
-            spotify_player = next((p for p in players if "spotify" in p.lower()), None)
-            player_name = spotify_player if spotify_player else players[0]
-            
+
             # Query all metadata in ONE execution using unit separator (\x1f) delimiter
             output = subprocess.check_output([
                 "playerctl", "-p", player_name, "metadata", 

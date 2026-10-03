@@ -1,6 +1,6 @@
 id = "goatnath/spotify-lyrics"
 name = "Spotify Lyrics"
-version = "1.2.1"
+version = "1.3.0"
 plugin_api = 3
 author = "goatnath"
 license = "MIT"
@@ -30,3 +30,39 @@ height = 280
 [[desktop_widget]]
 id = "lyrics-desktop"
 entry = "widget.luau"
+
+# Desktop widget entry settings: edited in the desktop widget editor, next to the
+# Background switch. widget.luau republishes them so the bar and panel follow.
+
+# Bar button, desktop widget and panel all disappear while nothing is playing.
+# Set false to keep the "No music playing" placeholder instead.
+[[desktop_widget.setting]]
+key = "hide_when_idle"
+type = "bool"
+default = true
+label_key = "settings.hide_when_idle.label"
+description_key = "settings.hide_when_idle.description"
+
+# Bar icon, track glyph and artist name.
+[[desktop_widget.setting]]
+key = "accent_color"
+type = "color"
+default = "primary"
+label_key = "settings.accent_color.label"
+description_key = "settings.accent_color.description"
+
+# Current lyric line and track title.
+[[desktop_widget.setting]]
+key = "active_color"
+type = "color"
+default = "on_surface"
+label_key = "settings.active_color.label"
+description_key = "settings.active_color.description"
+
+# Previous/next lines, separators and empty states.
+[[desktop_widget.setting]]
+key = "inactive_color"
+type = "color"
+default = "on_surface_variant"
+label_key = "settings.inactive_color.label"
+description_key = "settings.inactive_color.description"

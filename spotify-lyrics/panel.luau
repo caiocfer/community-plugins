@@ -3,6 +3,9 @@
 --
 -- Reads state from noctalia.state (published by service.luau) or directly
 -- from disk fallback, and renders album art + prev / current / next lyric lines.
+-- Closes itself when no media is playing (see the "hide_when_idle" setting).
+
+local theme = require("./theme.luau")
 
 local STATE_PATH = noctalia.expandPath("~/.cache/noctalia/lyrics/current.json")
 
@@ -90,24 +93,24 @@ end
 -- Rendering
 --------------------------------------------------------------------------------
 
-local function renderEmpty()
+local function renderEmpty(c)
   panel.render(ui.column({
     flexGrow = 1, gap = 8, align = "stretch", justify = "center",
     padding = PANEL_PADDING,
     minWidth = PANEL_WIDTH, height = PANEL_HEIGHT,
   }, {
     ui.row({ justify = "center" }, {
-      ui.glyph({ name = "music", size = 28, color = "on_surface/0.2" }),
+      ui.glyph({ name = "music", size = 28, color = c.inactiveFaint }),
     }),
     ui.label({
       text = "No music playing",
       fontSize = 14, fontWeight = "medium",
-      color = "on_surface/0.25", textAlign = "center",
+      color = c.inactiveFaint, textAlign = "center",
     }),
   }))
 end
 
-local function renderPaused(title, artist, current, artPath)
+local function renderPaused(title, artist, current, artPath, c)
   local headerChildren = {}
 
   -- Album art (if available)
@@ -118,7 +121,7 @@ local function renderPaused(title, artist, current, artPath)
       cornerRadius = 8,
     }))
   else
-    table.insert(headerChildren, ui.glyph({ name = "player-pause", size = 22, color = "on_surface/0.3" }))
+    table.insert(headerChildren, ui.glyph({ name = "player-pause", size = 22, color = c.accent }))
   end
 
   -- Title + artist beside the art
@@ -126,12 +129,12 @@ local function renderPaused(title, artist, current, artPath)
     ui.label({
       text = title or "Paused",
       fontSize = 13, fontWeight = "bold",
-      color = "on_surface/0.5", wrap = true, maxLines = 1,
+      color = c.activeDim, wrap = true, maxLines = 1,
     }),
     ui.label({
       text = artist or "",
       fontSize = 11, fontWeight = "medium",
-      color = "on_surface/0.35", wrap = true, maxLines = 1,
+      color = c.inactive, wrap = true, maxLines = 1,
     }),
   }))
 
@@ -144,12 +147,12 @@ local function renderPaused(title, artist, current, artPath)
     ui.label({
       text = current or "Paused",
       fontSize = 18, fontWeight = "bold",
-      color = "on_surface/0.6", textAlign = "center", wrap = true,
+      color = c.activeDim, textAlign = "center", wrap = true,
     }),
   }))
 end
 
-local function renderPlaying(title, artist, prev, current, nextLine, artPath)
+local function renderPlaying(title, artist, prev, current, nextLine, artPath, c)
   local rows = {}
 
   -- ── Track header: album art + song info ──
@@ -170,17 +173,17 @@ local function renderPlaying(title, artist, prev, current, nextLine, artPath)
       ui.label({
         text = title,
         fontSize = 13, fontWeight = "bold",
-        color = "on_surface/0.9", wrap = true, maxLines = 2,
+        color = c.active, wrap = true, maxLines = 2,
       }),
       ui.label({
         text = artist,
         fontSize = 11, fontWeight = "medium",
-        color = "primary/0.7", wrap = true, maxLines = 1,
+        color = c.accent, wrap = true, maxLines = 1,
       }),
     }))
 
     table.insert(rows, ui.row({ gap = 12, align = "center" }, headerChildren))
-    table.insert(rows, ui.box({ height = 1, fill = "on_surface/0.06" }))
+    table.insert(rows, ui.box({ height = 1, fill = c.inactiveFaint }))
   end
 
   -- ── Previous lyric ──
@@ -189,7 +192,7 @@ local function renderPlaying(title, artist, prev, current, nextLine, artPath)
     table.insert(rows, ui.label({
       text = clampText(prev, prevSize, 2),
       fontSize = prevSize, fontWeight = "medium",
-      color = "on_surface/0.4", textAlign = "center", wrap = true,
+      color = c.inactive, textAlign = "center", wrap = true,
       maxLines = 2,
     }))
   else
@@ -203,7 +206,7 @@ local function renderPlaying(title, artist, prev, current, nextLine, artPath)
   table.insert(rows, ui.label({
     text = clampText(currentText, currentSize, 3),
     fontSize = currentSize, fontWeight = "bold",
-    color = "on_surface/0.95", textAlign = "center", wrap = true,
+    color = c.active, textAlign = "center", wrap = true,
     maxLines = 3,
   }))
 
@@ -213,7 +216,7 @@ local function renderPlaying(title, artist, prev, current, nextLine, artPath)
     table.insert(rows, ui.label({
       text = clampText(nextLine, nextSize, 2),
       fontSize = nextSize, fontWeight = "medium",
-      color = "on_surface/0.4", textAlign = "center", wrap = true,
+      color = c.inactive, textAlign = "center", wrap = true,
       maxLines = 2,
     }))
   else
@@ -233,13 +236,18 @@ end
 
 local function renderFromState()
   local state = getState()
+  local colors = theme.colors()
 
-  if state.status == "" or state.status == "Stopped" then
-    renderEmpty()
+  if theme.isIdle(state.status) then
+    if theme.hideWhenIdle() then
+      panel.close()
+      return
+    end
+    renderEmpty(colors)
   elseif state.status == "Paused" then
-    renderPaused(state.title, state.artist, state.current, state.art_path)
+    renderPaused(state.title, state.artist, state.current, state.art_path, colors)
   else
-    renderPlaying(state.title, state.artist, state.prev, state.current, state.next, state.art_path)
+    renderPlaying(state.title, state.artist, state.prev, state.current, state.next, state.art_path, colors)
   end
 end
 

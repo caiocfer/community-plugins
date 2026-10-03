@@ -1,0 +1,80 @@
+id = "caiocfer/spotify-player"
+name = "Spotify Player"
+version = "1.0.0"
+plugin_api = 3
+author = "caiocfer"
+license = "MIT"
+dependencies = ["playerctl"]
+tags = ["music", "desktop"]
+icon = "music"
+description = "Spotify desktop player: full-bleed album art, progress bar and playback controls."
+
+# Desktop widget entry: album art fills the card, progress bar above the controls.
+# Talks to Spotify directly through playerctl, so no background daemon is needed.
+[[desktop_widget]]
+id = "player"
+entry = "player.luau"
+
+# Widgets with a fixed box follow the box the user resizes in the desktop widget
+# editor: the artwork and the overlay scale with it. These two values are only the
+# fallback draw size for auto-fit widgets that have no box yet.
+[[desktop_widget.setting]]
+key = "widget_width"
+type = "int"
+default = 337
+min = 160
+max = 1600
+label_key = "settings.widget_width.label"
+description_key = "settings.widget_width.description"
+
+[[desktop_widget.setting]]
+key = "widget_height"
+type = "int"
+default = 518
+min = 200
+max = 1600
+label_key = "settings.widget_height.label"
+description_key = "settings.widget_height.description"
+
+# Cover corners.
+[[desktop_widget.setting]]
+key = "corner_radius"
+type = "int"
+default = 16
+min = 0
+max = 64
+label_key = "settings.corner_radius.label"
+description_key = "settings.corner_radius.description"
+
+# Track title and artist drawn over the cover.
+[[desktop_widget.setting]]
+key = "show_track_info"
+type = "bool"
+default = true
+label_key = "settings.show_track_info.label"
+description_key = "settings.show_track_info.description"
+
+# Tint text, icons and the progress bar with the cover hue, contrast-fitted
+# over a static scrim so they stay readable.
+[[desktop_widget.setting]]
+key = "cover_colors"
+type = "bool"
+default = true
+label_key = "settings.cover_colors.label"
+description_key = "settings.cover_colors.description"
+
+# Progress bar fill, used when cover colors are off.
+[[desktop_widget.setting]]
+key = "accent_color"
+type = "color"
+default = "primary"
+label_key = "settings.accent_color.label"
+description_key = "settings.accent_color.description"
+
+# Disappear completely while Spotify is stopped.
+[[desktop_widget.setting]]
+key = "hide_when_idle"
+type = "bool"
+default = true
+label_key = "settings.hide_when_idle.label"
+description_key = "settings.hide_when_idle.description"
