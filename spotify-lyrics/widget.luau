@@ -4,6 +4,9 @@
 -- Same data source as panel.luau but rendered via desktopWidget.render()
 -- with larger font sizes for desktop readability.
 -- Long lyrics are dynamically scaled to smaller fonts to prevent overflow.
+-- Renders nothing at all when no media is playing (see "hide_when_idle").
+
+local theme = require("./theme.luau")
 
 local STATE_PATH = noctalia.expandPath("~/.cache/noctalia/lyrics/current.json")
 
@@ -126,37 +129,42 @@ end
 -- Rendering
 --------------------------------------------------------------------------------
 
-local function renderEmpty()
+-- No setVisible() on desktopWidget; an invisible root leaves no grid gap.
+local function renderHidden()
+  desktopWidget.render(ui.column({ visible = false }, {}))
+end
+
+local function renderEmpty(c)
   desktopWidget.render(ui.column({
     gap = 8, align = "center", justify = "center",
     minWidth = WIDGET_WIDTH, minHeight = currentHeight,
     maxHeight = MAX_HEIGHT,
   }, {
-    ui.glyph({ name = "music", size = 28, color = "on_surface/0.3" }),
+    ui.glyph({ name = "music", size = 28, color = c.inactiveFaint }),
     ui.label({
       text = "No music playing",
-      fontSize = 16, fontWeight = "medium", color = "on_surface/0.3",
+      fontSize = 16, fontWeight = "medium", color = c.inactiveFaint,
     }),
   }))
 end
 
-local function renderPaused(state)
+local function renderPaused(state, c)
   desktopWidget.render(ui.column({
     gap = 8, align = "center", justify = "center",
     minWidth = WIDGET_WIDTH, minHeight = currentHeight,
     maxHeight = MAX_HEIGHT,
   }, {
-    ui.glyph({ name = "player-pause", size = 22, color = "on_surface/0.4" }),
+    ui.glyph({ name = "player-pause", size = 22, color = c.accent }),
     ui.label({
       text = state.current or "Paused",
       fontSize = 22, fontWeight = "bold",
-      color = "on_surface/0.5", wrap = true, textAlign = "center",
+      color = c.activeDim, wrap = true, textAlign = "center",
       maxLines = 2,
     }),
   }))
 end
 
-local function renderPlaying(state)
+local function renderPlaying(state, c)
   local rows = {}
 
   -- Track header
@@ -164,15 +172,15 @@ local function renderPlaying(state)
   local artist = state.artist or ""
   if title ~= "" and artist ~= "" then
     table.insert(rows, ui.row({ gap = 6, align = "center" }, {
-      ui.glyph({ name = "music", size = 12, color = "primary/0.7" }),
+      ui.glyph({ name = "music", size = 12, color = c.accent }),
       ui.label({
         text = title .. " — " .. artist,
         fontSize = 11, fontWeight = "medium",
-        color = "primary/0.6", wrap = true,
+        color = theme.alpha(c.accent, 0.6), wrap = true,
         maxLines = 1,
       }),
     }))
-    table.insert(rows, ui.box({ height = 1, fill = "on_surface/0.08" }))
+    table.insert(rows, ui.box({ height = 1, fill = c.inactiveFaint }))
   end
 
   -- Previous lyric (dynamically scaled, clamped to 2 lines)
@@ -182,7 +190,7 @@ local function renderPlaying(state)
     table.insert(rows, ui.label({
       text = clampText(prevText, prevSize, 2),
       fontSize = prevSize, fontWeight = "normal",
-      color = "on_surface/0.3", textAlign = "center", wrap = true,
+      color = c.inactive, textAlign = "center", wrap = true,
       maxLines = 2,
     }))
   else
@@ -196,7 +204,7 @@ local function renderPlaying(state)
   table.insert(rows, ui.label({
     text = clampText(currentText, currentSize, 3),
     fontSize = currentSize, fontWeight = "bold",
-    color = "on_surface", textAlign = "center", wrap = true,
+    color = c.active, textAlign = "center", wrap = true,
     maxLines = 3,
   }))
 
@@ -207,7 +215,7 @@ local function renderPlaying(state)
     table.insert(rows, ui.label({
       text = clampText(nextText, nextSize, 2),
       fontSize = nextSize, fontWeight = "normal",
-      color = "on_surface/0.3", textAlign = "center", wrap = true,
+      color = c.inactive, textAlign = "center", wrap = true,
       maxLines = 2,
     }))
   else
@@ -222,12 +230,24 @@ local function renderPlaying(state)
 end
 
 local function render(state)
-  if not state or state.status == "Stopped" or state.status == "" then
-    renderEmpty()
+  local c = theme.colors()
+  local hideIdle = theme.hideWhenIdle()
+
+  noctalia.state.set("lyricsAccent", c.accent)
+  noctalia.state.set("lyricsActive", c.active)
+  noctalia.state.set("lyricsInactive", c.inactive)
+  noctalia.state.set("lyricsHideIdle", hideIdle)
+
+  if theme.isIdle(state and state.status) then
+    if hideIdle then
+      renderHidden()
+    else
+      renderEmpty(c)
+    end
   elseif state.status == "Paused" then
-    renderPaused(state)
+    renderPaused(state, c)
   else
-    renderPlaying(state)
+    renderPlaying(state, c)
   end
 end
 

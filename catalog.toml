@@ -1182,7 +1182,7 @@ tags = ["bar", "hardware", "panel", "service", "system", "utility"]
 [[plugin]]
 id = "goatnath/spotify-lyrics"
 name = "Spotify Lyrics"
-version = "1.2.1"
+version = "1.3.0"
 updated_at = 1788120249
 added_at = 1786025122
 author = "goatnath"
