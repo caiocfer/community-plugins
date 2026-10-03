@@ -1,6 +1,9 @@
 --!nonstrict
 -- Minimal bar trigger: shows a small lyrics glyph next to the media widget.
--- Auto-hides when no music is playing. Click to toggle the lyrics panel.
+-- Auto-hides when no media is playing (see the "hide_when_idle" setting).
+-- Click to toggle the lyrics panel.
+
+local theme = require("./theme.luau")
 
 local STATE_PATH = noctalia.expandPath("~/.cache/noctalia/lyrics/current.json")
 
@@ -27,18 +30,30 @@ function update()
     end
   end
 
-  if not status or status == "Stopped" or status == "" then
-    barWidget.setVisible(false)
+  barWidget.setGlyph("music")
+  barWidget.setText("")
+
+  local colors = theme.colors()
+
+  if theme.isIdle(status) then
+    if theme.hideWhenIdle() then
+      barWidget.setVisible(false)
+      return
+    end
+    barWidget.setVisible(true)
+    barWidget.setGlyphColor(theme.alpha(colors.inactive, 0.35), "script")
+    barWidget.setTooltip("No media playing")
     return
   end
 
   barWidget.setVisible(true)
-  barWidget.setGlyph("music")
-  barWidget.setText("")
-  barWidget.setGlyphColor("primary")
+  barWidget.setGlyphColor(colors.accent, "script")
   barWidget.setTooltip(current or "...")
 end
 
 function onClick()
+  if theme.isIdle(noctalia.state.get("lyricsStatus")) and theme.hideWhenIdle() then
+    return
+  end
   noctalia.togglePanel("goatnath/spotify-lyrics:lyrics-panel")
 end
